@@ -24,9 +24,9 @@ Alternatively, you could run ```pip install -r requirements.txt``` in the direct
 ### Run time
 - The initial run will take significantly more time due to the initial downloading of stable diffusion. Subsequent run times to generate image depends on the RAM and VRAM available on the machine running this project.
 
-### Models
+## Models
 - The base models available are [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) and [stable-diffusion-v1-5](https://huggingface.co/runwayml/stable-diffusion-v1-5). 
-- However, pre-trained models with smaller file sizes are provided. Opt to use them by changing the settings through "setup.py". Models provided are [Realistic Vision V6.0 B1](https://civitai.com/models/4201/realistic-vision-v60-b1) (SD v1-5 base) and [SDXL Yamer's Realistic](https://civitai.com/models/127923?modelVersionId=272724) (SDXL v1.0 base). They produce better results compared to the base models, hence they are HIGHLY RECCOMENDED
+- However, pre-trained models with smaller file sizes are provided. Opt to use them by changing the settings through "setup.py". Models provided are [Realistic Vision V6.0 B1](https://civitai.com/models/4201/realistic-vision-v60-b1) (SD v1-5 base) and [SDXL Yamer's Realistic](https://civitai.com/models/127923?modelVersionId=272724) (SDXL v1.0 base). They produce better results compared to the base models, hence they are HIGHLY RECOMMENDED
 - To use your own custom model, rename your model file to ```realistic``` (for models with SD v1-5 base) or ```realisticXL``` (SDXL v1.0 based) and then place the model folder into the folder named "models" 
 - Custom LORA weights can be used by replacing the ```weight.safetensors``` file in the "models" folder with your trained weights.      
 
