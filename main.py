@@ -60,16 +60,16 @@ def getprompt():
     elif (locationnum == 3):
         where = " in a city"
 
-    timenum = random.randint(0,1)
+    timenum = random.randint(0,2)
     if (timenum == 0):
         when = " at night"
 
     expressionnum = random.randint(0,99)
-    if (expressionnum in range (0,29,1)):
+    if (expressionnum in range (0,39,1)):   # 40% chance due to better results
         expression = " smiling"
-    elif (expressionnum in range (30,59,1)):
+    elif (expressionnum in range (40,49,1)): # 10% chance
         expression = " sad"    
-    elif (expressionnum in range (60,70,1)):
+    elif (expressionnum in range (50,59,1)): #last 40% dedicated to no expression
         expression = " angry"
     
     picnum = random.randint(0,9)
@@ -90,7 +90,8 @@ def getimage(pipe, prompt):
     
     #load LORA weight. Ensure base model of weight is either SD v1-5 or SDXL v1.0
     pipe.load_lora_weights(f"{path}/models/weight.safetensors")
-    prompt = "woman at night"
+    
+
     #generate image
     negprompt = "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, NSFW"
     output = pipe(prompt=prompt,
