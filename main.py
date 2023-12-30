@@ -1,18 +1,19 @@
 import os
 import pathlib
+import random
 from diffusers import StableDiffusionXLPipeline
 from diffusers import StableDiffusionPipeline
 import torch
-from PIL import Image 
+from PIL import Image
 
+#declare project directory
 path = pathlib.Path(__file__).parent.resolve()
-
 
 #reads settings.txt and load the config
 def config():
-    settings = [0,0]
+    settings = [0,0,0]
     f = open(f"{path}/config/settings.txt", "r")
-    j= 0
+    j = 0
     for x in f:
         settings[j] = int(x)
         j += 1
@@ -22,26 +23,75 @@ def config():
 
 
 def testNSFW():
-    img = Image.open(f"{path}/output/gen.jpg")
+    #load latest generated image
+    prev = 1
+    while (os.path.exists(f"{path}/output/{prev}.jpg")):
+        prev+=1
+    latest = prev - 1
+    img = Image.open(f"{path}/output/{latest}.jpg")
+
+    #get colours in image
     colors = img.getcolors(1000) 
     max_occurence, most_present = 0, 0
     try:
         for c in colors:
             if c[0] > max_occurence:
                 (max_occurence, most_present) = c
-        return most_present
+        return most_present   #returns most detected colour
     except TypeError:
         return
 
 
 
-def getimage(pipe):
+# automatically generates random prompts each time
+def getprompt():
+    where = ""
+    when = ""
+    expression = ""
+    pictype = ""
+
+    locationnum = random.randint(0,4)
+    if (locationnum == 0):
+        where = " outdoors"
+    elif (locationnum == 1):
+        where = " indoors"
+    elif (locationnum == 2):
+        where = " in nature"
+    elif (locationnum == 3):
+        where = " in a city"
+
+    timenum = random.randint(0,1)
+    if (timenum == 0):
+        when = " at night"
+
+    expressionnum = random.randint(0,99)
+    if (expressionnum in range (0,29,1)):
+        expression = " smiling"
+    elif (expressionnum in range (30,59,1)):
+        expression = " sad"    
+    elif (expressionnum in range (60,70,1)):
+        expression = " angry"
+    
+    picnum = random.randint(0,9)
+    if (picnum == 0):
+        pictype = "close up picture of "
+        where,when = "" , ""
+    elif (picnum == 1):
+        pictype = "selfie of "
+
+
+    prompt = f"{pictype}woman{where}{when}{expression}"
+    print(prompt)
+    return prompt
+
+
+
+def getimage(pipe, prompt):
     
     #load LORA weight. Ensure base model of weight is either SD v1-5 or SDXL v1.0
     pipe.load_lora_weights(f"{path}/models/weight.safetensors")
-    
+    prompt = "woman at night"
     #generate image
-    prompt = input("Prompt: ")
     negprompt = "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, NSFW"
     output = pipe(prompt=prompt,
                   num_inference_steps=100, 
@@ -96,15 +146,18 @@ def main():
         pipe = modelpl.from_pretrained(model, 
                                        torch_dtype=torch.float32
                                        )
-        
+    if settings[2] == 0:
+        prompt = getprompt()
+    else:
+        prompt = input("Prompt: ")
 
-    getimage(pipe)
+    getimage(pipe, prompt)
 
 
     #Regenerate image until a safe image is produced
-    '''while testNSFW() == (0,0,0):    
+    while testNSFW() == (0,0,0):    
         print("Retrying. Consider changing prompts.")
-        getimage(pipe)'''
+        getimage(pipe)
 
 
 
