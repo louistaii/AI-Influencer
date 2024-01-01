@@ -1,18 +1,21 @@
 import os
 import pathlib
 import random
+import igbot
+
 from diffusers import StableDiffusionXLPipeline
 from diffusers import StableDiffusionPipeline
 import torch
+import gdown
 from PIL import Image
 
 #declare project directory
 path = pathlib.Path(__file__).parent.resolve()
 
-#reads settings.txt and load the config
-def config():
-    settings = [0,0,0]
-    f = open(f"{path}/config/settings.txt", "r")
+#reads in settings and load the config
+def aiconfig():
+    settings = [0,0,0,0]
+    f = open(f"{path}/config/aisettings.txt", "r")
     j = 0
     for x in f:
         settings[j] = int(x)
@@ -22,14 +25,7 @@ def config():
 
 
 
-def testNSFW():
-    #load latest generated image
-    prev = 1
-    while (os.path.exists(f"{path}/output/{prev}.jpg")):
-        prev+=1
-    latest = prev - 1
-    img = Image.open(f"{path}/output/{latest}.jpg")
-
+def testNSFW(img):
     #get colours in image
     colors = img.getcolors(1000) 
     max_occurence, most_present = 0, 0
@@ -86,7 +82,7 @@ def getprompt():
 
 
 
-def getimage(pipe, prompt):
+def getimage(pipe, prompt,steps):
     
     #load LORA weight. Ensure base model of weight is either SD v1-5 or SDXL v1.0
     pipe.load_lora_weights(f"{path}/models/weight.safetensors")
@@ -95,7 +91,7 @@ def getimage(pipe, prompt):
     #generate image
     negprompt = "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, NSFW"
     output = pipe(prompt=prompt,
-                  num_inference_steps=100, 
+                  num_inference_steps=steps, 
                   height=1024, width=1024,
                   negative_prompt = negprompt).images[0]
        
@@ -110,31 +106,38 @@ def getimage(pipe, prompt):
 
 def main():
 
-    settings = config()
+    settings = aiconfig()
 
     #choose models based off settings
-
     if settings[0] == 1:                 #using SD v1-5
         modelpl = StableDiffusionPipeline
-        if settings[1] == 0:             #using pre-trained model
-            if os.path.exists(f"{path}/models/realistic"):
-                model = f"{path}/models/realistic"
-            else:
-                model = "SG161222/Realistic_Vision_V6.0_B1_noVAE" 
-        else:                            #download SD 1.5 from huggingface
-            model = "runwayml--stable-diffusion-v1-5"
+        if os.path.exists(f"{path}/models/realistic"):
+            model = f"{path}/models/realistic"
+        else:
+            model = "SG161222/Realistic_Vision_V6.0_B1_noVAE"
 
-    else:                                #using SDXL 1.0
-        modelpl= StableDiffusionXLPipeline
-        if settings[1] == 0:             #using pre-trained model
-            if os.path.exists(f"{path}/models/realistic"):
-                model = f"{path}/models/realisticXL"
-            else:
-                model = "coreml-community/coreml-YamersRealistic-v4_SDXL_8-bit"
-        else:                            #download SDXL 1.0 from huggingface
-            model = "stabilityai/stable-diffusion-xl-base-1.0"
+        if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
+            print("Downloading Claire trained weights for SD v1-5..")
+            url = "https://drive.google.com/uc?id=17dVOU6H32wc8qWSfHyjXk1ZGb3CBKPsf"
+            output = f"{path}/models/weight.safetensors"
+            gdown.download(url, output, quiet=False)
         
 
+
+    else:                                #using SDXL 1.0
+        modelpl= StableDiffusionXLPipeline          
+        if os.path.exists(f"{path}/models/realistic"):
+            model = f"{path}/models/realisticXL"
+        else:
+            model = "coreml-community/coreml-YamersRealistic-v4_SDXL_8-bit"
+        
+        if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
+            print("Downloading Claire trained weights for SDXL 1.0..")
+            url = "https://drive.google.com/uc?id=1EJsV_2zqseAypcH_v_Eku49x7QMtJMeE"
+            output = f"{path}/models/weight.safetensors"
+            gdown.download(url, output, quiet=False)
+    
+        
 
     #check for cuda support and setup pipeline accordingly
     if torch.cuda.is_available() == True:         
@@ -147,18 +150,40 @@ def main():
         pipe = modelpl.from_pretrained(model, 
                                        torch_dtype=torch.float32
                                        )
+    
+    
+    steps = round(int(settings[1]))
+
     if settings[2] == 0:
         prompt = getprompt()
     else:
         prompt = input("Prompt: ")
+    
+    
+    steps =100
+    getimage(pipe, prompt, steps)
 
-    getimage(pipe, prompt)
+
+    #load latest generated image
+    prev = 1
+    while (os.path.exists(f"{path}/output/{prev}.jpg")):
+        prev+=1
+    latest = prev - 1
+    img = Image.open(f"{path}/output/{latest}.jpg")
+
 
 
     #Regenerate image until a safe image is produced
-    while testNSFW() == (0,0,0):    
+    while testNSFW(img) == (0,0,0):    
         print("Retrying. Consider changing prompts.")
-        getimage(pipe)
+        getimage(pipe, prompt, steps)
+
+    #open final image
+    img.show()
+
+    if settings[3] == 0:
+        igbot.main()
+
 
 
 
