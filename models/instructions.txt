@@ -1,1 +1,2 @@
-To use your own custom model, rename your model file to realistic (for models with SD v1-5 base) or realisticXL (SDXL v1.0 based) and then place the model folder into this folder. Custom LORA weights can be used by replacing the weight.safetensors file in this folder with your trained weights.
+To use your own custom model, rename your model file to realistic (for models with SD v1-5 base) or realisticXL (SDXL v1.0 based) and then place the model folder into this folder. 
+Custom LORA weights can be used by replacing the weight.safetensors (for models with SD v1-5 base) or weightsXL((SDXL v1.0 based)) file in this folder with your trained weight.

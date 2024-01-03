@@ -43,7 +43,7 @@ def storyimg(imgpath, caption):
     cl.photo_upload_to_story(imgpath, caption)
     
 
-def auto(hashtags, algo):
+def auto(hashtags, algo, confirm):
     prev = 1
     while (os.path.exists(f"{path}/output/{prev}.jpg")):
         prev+=1
@@ -52,25 +52,31 @@ def auto(hashtags, algo):
     caption = getcaption(hashtags)
     
     #gain confirmation
-    print(f"Upload {latest}.jpg with caption: {caption} ? ")
-    confirmation = input("[y/n]:")
-    if (confirmation == "y" or caption == "Y"):
+    if int(confirm) == 0:
+        print(f"Upload {latest}.jpg with caption: {caption} ? ")
+        confirmation = input("[y/n]:")
+        if (confirmation == "y" or confirmation == "Y"):
+            postimg(imgpath, caption)
+            if int(algo) == 0:
+                f4f()
+        else:
+            quit()
+    else:
         postimg(imgpath, caption)
         if int(algo) == 0:
             f4f()
-    else:
-        quit()
+
 
 
 
 def main():
     f = open(f"{path}/config/igsettings.txt", "r")
-    username, password, hashtags, algo = f.read().splitlines()
+    username, password, hashtags, algo, confirm = f.read().splitlines()
     f.close()
     
     print(f"Logging in to @{username}")
     cl.login(username, password)
-    auto(hashtags, algo)
+    auto(hashtags, algo, confirm)
 
 
 if __name__ == "__main__":

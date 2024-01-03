@@ -84,10 +84,6 @@ def getprompt():
 
 def getimage(pipe, prompt,steps):
     
-    #load LORA weight. Ensure base model of weight is either SD v1-5 or SDXL v1.0
-    pipe.load_lora_weights(f"{path}/models/weight.safetensors")
-    
-
     #generate image
     negprompt = "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, NSFW"
     output = pipe(prompt=prompt,
@@ -118,11 +114,9 @@ def main():
 
         if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
             print("Downloading Claire trained weights for SD v1-5..")
-            url = "https://drive.google.com/uc?id=17dVOU6H32wc8qWSfHyjXk1ZGb3CBKPsf"
+            url = "https://drive.google.com/uc?id=1_X5vV409D0mr8fU2N7i5vu1rnToV8jBD"
             output = f"{path}/models/weight.safetensors"
             gdown.download(url, output, quiet=False)
-        
-
 
     else:                                #using SDXL 1.0
         modelpl= StableDiffusionXLPipeline          
@@ -134,10 +128,9 @@ def main():
         if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
             print("Downloading Claire trained weights for SDXL 1.0..")
             url = "https://drive.google.com/uc?id=1EJsV_2zqseAypcH_v_Eku49x7QMtJMeE"
-            output = f"{path}/models/weight.safetensors"
+            output = f"{path}/models/weightXL.safetensors"
             gdown.download(url, output, quiet=False)
     
-        
 
     #check for cuda support and setup pipeline accordingly
     if torch.cuda.is_available() == True:         
@@ -159,8 +152,11 @@ def main():
     else:
         prompt = input("Prompt: ")
     
-    
-    steps =100
+    if(settings[0]==1):
+        pipe.load_lora_weights(f"{path}/models/weight.safetensors")
+    else:
+        pipe.load_lora_weights(f"{path}/models/weightXL.safetensors")
+
     getimage(pipe, prompt, steps)
 
 
@@ -172,10 +168,10 @@ def main():
     img = Image.open(f"{path}/output/{latest}.jpg")
 
 
-
     #Regenerate image until a safe image is produced
     while testNSFW(img) == (0,0,0):    
         print("Retrying. Consider changing prompts.")
+        os.remove(f"{path}/output/{latest}.jpg")
         getimage(pipe, prompt, steps)
 
     #open final image

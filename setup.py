@@ -10,41 +10,58 @@ class bcolors:
 
 path = pathlib.Path(__file__).parent.resolve()
 
-
-def iginfo(hashtag, algo):
-    username = input("Instagram username (without the @): ")
-    password = input("Password: ")
+def igsaveconfig(username, password, hashtag, algo, confirm):
     f = open(f"{path}/config/igsettings.txt", "w")
-    f.writelines(f"{username}\n{password}\n{hashtag}\n{algo}")
+    f.writelines(f"{username}\n{password}\n{hashtag}\n{algo}\n{confirm}")
     f.close()
     igconfig()
 
-def ighashtag(username,password):
+def iginfo(hashtag, algo, confirm):
+    username = input("Instagram username (without the @): ")
+    password = input("Password: ")
+    igsaveconfig(username,password,hashtag,algo,confirm)
+    igconfig()
+
+def ighashtag(username,password,confirm):
     print("\nInput wanted hashtags in captions (eg.'#like4like #follow4follwow'). Leave blank if no hashtags are needed")
     hashtag = input("hashtags: ")
     yesno = input("Enable increase followers algorithm? [Y/N]: ")
-    if yesno == "y" or "Y":
+    if yesno.lower == 'y':
         algo = 0
     else:
         algo = 1
-
-    f = open(f"{path}/config/igsettings.txt", "w")
-    f.writelines(f"{username}\n{password}\n{hashtag}\n{algo}")
-    f.close()
+    
+    igsaveconfig(username,password,hashtag,algo,confirm)
     igconfig()
 
+def igconfirm(username, password,hashtag,algo):
+    
+    choice = input("Require confirmation before posting? [Y/N]:")
+    if choice.lower() == 'y':
+        confirm = 0
+    else:
+        confirm =1
+
+    igsaveconfig(username,password,hashtag,algo,confirm)
+    igconfig()  
+    
 
 def igconfig(): 
+
     f = open(f"{path}/config/igsettings.txt", "r")
-    username, password, hashtag, algo = f.read().splitlines()
+    username, password, hashtag, algo, confirm = f.read().splitlines()
     f.close()
-    print(f"{bcolors.BOLD}\nMenu{bcolors.ENDC} \n1.) Input / change login info \n2.) Hashtags settings \n3.) Quit")
-    choice = input("Enter 1, 2 or 3: ")
+
+    print(f"{bcolors.BOLD}\nMenu{bcolors.ENDC} \n1.) Input / change login info \n2.) Hashtags settings \n3.) Confirmation before posting \n4.) Quit")
+    
+    choice = input("Enter 1, 2, 3 or 4: ")
     if choice == "1":
-        iginfo(hashtag,algo)
+        iginfo(hashtag,algo,confirm)
     if choice == "2":
-        ighashtag(username, password)
+        ighashtag(username, password,confirm)
     if choice == "3":
+        igconfirm(username, password,hashtag,algo)
+    if choice == "4":
         quit()
 
 
@@ -72,14 +89,14 @@ def recommended():
 def saveconfig(model,steps):
     # for auto prompt
     autoprompt = input("Enable auto prompt generation? [Y/N]:")
-    if (autoprompt == "y" or "Y" or "yes"):
+    if (autoprompt.lower() == 'y'):
         autoprompt = 0
     else:
         autoprompt = 1
 
 
-    enablebot = input("Link Instagram bot to image generator? [Y/N]:")
-    if (enablebot == "y" or "Y" or "yes"):
+    enablebotchoice = input("Link Instagram bot to image generator? [Y/N]:")
+    if (enablebotchoice.lower() == 'y'):
         enablebot = 0
     else:
         enablebot = 1
@@ -98,10 +115,6 @@ def saveconfig(model,steps):
 
 
 def aiconfig():
-    print(f"{bcolors.HEADER}AI INFLUENCER SETUP{bcolors.ENDC}")
-    print("")
-    recommended()
-
     print("Select configuration \n1.) Low Tier PC config \n2.) Mid Tier PC config \n3.) High Tier PC config \n4.) Custom")
     config = input("Enter 1, 2, 3 or 4: ")
     
@@ -122,6 +135,9 @@ def aiconfig():
 
 
 def main():
+    print(f"{bcolors.HEADER}AI INFLUENCER SETUP{bcolors.ENDC}")
+    print("")
+    recommended()
     aiconfig()
 
 
