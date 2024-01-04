@@ -113,20 +113,25 @@ def main():
             model = "SG161222/Realistic_Vision_V6.0_B1_noVAE"
 
         if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
-            print("Downloading Claire trained weights for SD v1-5..")
+            print("Downloading Claire trained weights for SD v1-5...")
             url = "https://drive.google.com/uc?id=1_X5vV409D0mr8fU2N7i5vu1rnToV8jBD"
             output = f"{path}/models/weight.safetensors"
             gdown.download(url, output, quiet=False)
 
     else:                                #using SDXL 1.0
         modelpl= StableDiffusionXLPipeline          
-        if os.path.exists(f"{path}/models/realistic"):
-            model = f"{path}/models/realisticXL"
-        else:
-            model = "coreml-community/coreml-YamersRealistic-v4_SDXL_8-bit"
         
-        if os.path.exists(f"{path}/models/weight.safetensors") == False:       #downloads claire LORA weights
-            print("Downloading Claire trained weights for SDXL 1.0..")
+        if os.path.exists(f"{path}/models/realisticXL") == False:
+            print("Downloading trained model for SDXL 1.0...This make take awhile...")
+            url = "https://drive.google.com/drive/folders/1xTRiqZ__XhLR0zxbTaMTG21yYK3-z30u?usp=sharing"
+            output = f"{path}/models/realisticXL"
+            gdown.download_folder(url, output = output,quiet=True, use_cookies=False)   
+
+        model = f"{path}/models/realisticXL"
+
+        
+        if os.path.exists(f"{path}/models/weightXL.safetensors") == False:       #downloads claire LORA weights
+            print("Downloading Claire trained weights for SDXL 1.0...")
             url = "https://drive.google.com/uc?id=1EJsV_2zqseAypcH_v_Eku49x7QMtJMeE"
             output = f"{path}/models/weightXL.safetensors"
             gdown.download(url, output, quiet=False)
